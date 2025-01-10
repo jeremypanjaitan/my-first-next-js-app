@@ -55,11 +55,12 @@ export async function createInvoice(prevState: State, formData: FormData) {
       INSERT INTO invoices (customer_id, amount, status, date)
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
-    revalidatePath("/dashboard/invoices");
-    redirect("/dashboard/invoices");
-  } catch {
-    throw new Error("Database Error: Failed to Delete Invoice");
+  } catch (error) {
+    console.log(error);
+    return { message: "Database Error: Failed to Create Invoice" };
   }
+  revalidatePath("/dashboard/invoices");
+  redirect("/dashboard/invoices");
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
@@ -91,10 +92,10 @@ export async function updateInvoice(
       WHERE id = ${id}
     `;
   } catch {
-    return { message: 'Database Error: Failed to Update Invoice.' };
+    return { message: "Database Error: Failed to Update Invoice." };
   }
-    revalidatePath("/dashboard/invoices");
-    redirect("/dashboard/invoices");
+  revalidatePath("/dashboard/invoices");
+  redirect("/dashboard/invoices");
 }
 
 export async function deleteInvoice(id: string) {
@@ -106,16 +107,19 @@ export async function deleteInvoice(id: string) {
   }
 }
 
-export async function authenticate(prevState: string | undefined, formData: FormData) {
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData
+) {
   try {
-    await signIn('credentials', formData);
+    await signIn("credentials", formData);
   } catch (error) {
-    if( error instanceof AuthError) {
-      switch(error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return "Invalid credentials.";
         default:
-          return 'Something went wrong.';
+          return "Something went wrong.";
       }
     }
     throw error;
